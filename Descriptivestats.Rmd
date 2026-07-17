@@ -65,10 +65,7 @@ df  <- as_tibble(df_raw)
 
 # Overview
 
-This report summarizes cleaning, scale scoring, reliability, descriptive
-statistics, and clinic-level comparisons for the Aim 2 baseline survey
-(Implementation Climate, Team Psychological Safety, and Collaboration &
-Satisfaction About Care Decisions).
+Prelim data cleaning and processing of our project 3 aim 2 data. 
 
 # Initial Cleaning & Renaming
 
