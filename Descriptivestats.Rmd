@@ -147,7 +147,7 @@ df <- df %>%
 
 ## Team Psychological Safety (EPSC, Edmondson)
 
-Scale: 1–7. Items 1, 3, and 5 are reverse-scored (`8 - x`).
+Scale: 1–7. Items 1, 3, and 5 are reverse-scored.
 
 ```{r epsc scoring}
 epsc_items <- paste0("EPSC_", 1:7)
@@ -186,6 +186,14 @@ df <- df %>%
     CSACD_Satisfaction   = CSACD.II_1,
     CSACD_DecisionMaking = rowMeans(across(c(CSACD.III_1, CSACD.III_2)), na.rm = TRUE)
   )
+```
+
+# Sample
+
+```{r demographics}
+clinic_table <- df %>% tabyl(Clinic) %>%
+  mutate(percent = round(percent * 100, 1))
+pretty_table(clinic_table, caption = "Respondents by Clinic")
 ```
 
 # Reliability (Cronbach's Alpha)
@@ -238,19 +246,6 @@ desc_table <- df %>%
 pretty_table(desc_table, caption = "Descriptive Statistics — Composite Scores")
 ```
 
-## Sample Composition
-
-```{r demographics}
-position_table <- df %>% tabyl(position) %>%
-  mutate(percent = round(percent * 100, 1))
-pretty_table(position_table, caption = "Respondents by Position") %>%
-  scroll_box(height = "300px")
-
-clinic_table <- df %>% tabyl(Clinic) %>%
-  mutate(percent = round(percent * 100, 1))
-pretty_table(clinic_table, caption = "Respondents by Clinic")
-```
-
 # Clinic Comparisons
 
 ```{r comparisons}
@@ -284,6 +279,7 @@ pretty_table(anova_by_clinic, caption = "One-Way ANOVA: Each Score by Clinic")
 
 ##Remember to use this is to update code locally, which will update the files 
 cd ~/Documents/UCSD/project3-aim2-report
+git pull origin main
 git add Descriptivestats.Rmd
 git commit -m "Update analysis"
 git push
