@@ -1596,6 +1596,102 @@ background-color: #00000008;
 border: 0;
 }
 </style>
+<style type="text/css">
+.Rtable1 table, table.Rtable1 {
+font-family: "Arial", Arial, sans-serif;
+font-size: 10pt;
+border-collapse: collapse;
+padding: 0px;
+margin: 0px;
+
+}
+.Rtable1 td {
+white-space:nowrap;
+}
+.Rtable1 th, .Rtable1 td {
+border: 0;
+text-align: center;
+padding: 0.5ex 1.5ex;
+margin: 0px;
+}
+.Rtable1 thead>tr:first-child>th {
+border-top: 2pt solid black;
+}
+.Rtable1 thead>tr:last-child>th {
+border-bottom: 1pt solid black;
+}
+.Rtable1 tbody>tr:last-child>td {
+border-bottom: 2pt solid black;
+}
+.Rtable1 th.grouplabel {
+padding-left: 0;
+padding-right: 0;
+}
+.Rtable1 th.grouplabel>div {
+margin-left: 1.5ex;
+margin-right: 1.5ex;
+border-bottom: 1pt solid black;
+}
+.Rtable1 th.grouplabel:last-child>div {
+margin-right: 0;
+}
+.Rtable1 .rowlabel {
+text-align: left;
+padding-left: 2.5ex;
+}
+.Rtable1 .firstrow.rowlabel {
+padding-left: 0.5ex;
+font-weight: bold;
+}
+
+.Rtable1-zebra tbody tr:nth-child(odd) {
+background-color: #eee;
+}
+
+table.Rtable1-times {
+font-family: "Times New Roman", Times, serif;
+}
+
+.Rtable1-shade th {
+background-color: #ccc;
+}
+
+.Rtable1-grid th, .Rtable1-grid td {
+border-left: 1pt solid black;
+border-right: 1pt solid black;
+}
+.Rtable1-grid thead>tr:first-child>th {
+border-top: 1pt solid black;
+}
+.Rtable1-grid thead>tr:last-child>th {
+border-bottom: 1pt solid black;
+}
+.Rtable1-grid tbody>tr:last-child>td {
+border-bottom: 1pt solid black;
+}
+.Rtable1-grid .firstrow, .Rtable1-grid .firstrow ~ td {
+border-top: 1pt solid black;
+}
+.Rtable1-grid th.grouplabel>div {
+margin-left: 0;
+margin-right: 0;
+border-bottom: 0;
+}
+
+.Rtable1-center td.rowlabel, .Rtable1-center td.firstrow.rowlabel {
+font-weight: bold;
+text-align: center;
+padding: 0.5ex 1.5ex;
+}
+
+.Rtable1 .Rtable1-footnote {
+font-size: smaller;
+padding: 0px;
+margin: 0px;
+text-align: left;
+white-space: normal;
+}
+</style>
 
 <style type="text/css">
 code{white-space: pre-wrap;}
@@ -1953,7 +2049,25 @@ Collaboration &amp; Satisfaction About Care Decisions).</p>
 <span id="cb1-44"><a href="#cb1-44" tabindex="-1"></a>                                        <span class="st">&quot;Gastroenterology&quot;</span>,</span>
 <span id="cb1-45"><a href="#cb1-45" tabindex="-1"></a>                                        <span class="st">&quot;Orthopedics&quot;</span>,</span>
 <span id="cb1-46"><a href="#cb1-46" tabindex="-1"></a>                                        <span class="st">&quot;Multiple Clinics&quot;</span>))</span>
-<span id="cb1-47"><a href="#cb1-47" tabindex="-1"></a>  )</span></code></pre></div>
+<span id="cb1-47"><a href="#cb1-47" tabindex="-1"></a>  )</span>
+<span id="cb1-48"><a href="#cb1-48" tabindex="-1"></a></span>
+<span id="cb1-49"><a href="#cb1-49" tabindex="-1"></a>df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb1-50"><a href="#cb1-50" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-51"><a href="#cb1-51" tabindex="-1"></a>    <span class="at">Gender =</span> <span class="fu">factor</span>(Gender,</span>
+<span id="cb1-52"><a href="#cb1-52" tabindex="-1"></a>                     <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">7</span>),</span>
+<span id="cb1-53"><a href="#cb1-53" tabindex="-1"></a>                     <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Woman&quot;</span>, <span class="st">&quot;Man&quot;</span>, <span class="st">&quot;Prefer not to answer&quot;</span>)),</span>
+<span id="cb1-54"><a href="#cb1-54" tabindex="-1"></a>    </span>
+<span id="cb1-55"><a href="#cb1-55" tabindex="-1"></a>    <span class="at">Race =</span> <span class="fu">factor</span>(Race,</span>
+<span id="cb1-56"><a href="#cb1-56" tabindex="-1"></a>                   <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>),</span>
+<span id="cb1-57"><a href="#cb1-57" tabindex="-1"></a>                   <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;White&quot;</span>, <span class="st">&quot;Black or African American&quot;</span>, </span>
+<span id="cb1-58"><a href="#cb1-58" tabindex="-1"></a>                              <span class="st">&quot;American Indian or Native Alaskan&quot;</span>,</span>
+<span id="cb1-59"><a href="#cb1-59" tabindex="-1"></a>                              <span class="st">&quot;Asian&quot;</span>, <span class="st">&quot;Native Hawaiian or Pacific Islander&quot;</span>,</span>
+<span id="cb1-60"><a href="#cb1-60" tabindex="-1"></a>                              <span class="st">&quot;More than one&quot;</span>, <span class="st">&quot;Other&quot;</span>, <span class="st">&quot;Prefer not to answer&quot;</span>)),</span>
+<span id="cb1-61"><a href="#cb1-61" tabindex="-1"></a>    </span>
+<span id="cb1-62"><a href="#cb1-62" tabindex="-1"></a>    <span class="at">Ethnicity =</span> <span class="fu">factor</span>(Ethnicity,</span>
+<span id="cb1-63"><a href="#cb1-63" tabindex="-1"></a>                        <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>),</span>
+<span id="cb1-64"><a href="#cb1-64" tabindex="-1"></a>                        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Hispanic&quot;</span>, <span class="st">&quot;Non-Hispanic&quot;</span>, <span class="st">&quot;Prefer not to answer&quot;</span>))</span>
+<span id="cb1-65"><a href="#cb1-65" tabindex="-1"></a>  )</span></code></pre></div>
 </div>
 <div id="scale-scoring" class="section level1">
 <h1>Scale Scoring</h1>
@@ -2099,33 +2213,308 @@ Multiple Clinics
 </tr>
 </tbody>
 </table>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co">#table 1</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>table1<span class="sc">::</span><span class="fu">table1</span>(<span class="sc">~</span> Gender <span class="sc">+</span> Race <span class="sc">+</span> Ethnicity <span class="sc">+</span> Experience <span class="sc">+</span> </span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>                 IC_Total <span class="sc">+</span> EPSC_Total <span class="sc">+</span> CSACD_Collaboration <span class="sc">|</span> Clinic, </span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>               <span class="at">data =</span> df)</span></code></pre></div>
+<div class="Rtable1"><table class="Rtable1">
+<thead>
+<tr>
+<th class="rowlabel firstrow lastrow"></th>
+<th class="firstrow lastrow"><span class="stratlabel">Adolescent Young Adult Medicine<br><span class="stratn">(N=7)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">Gastroenterology<br><span class="stratn">(N=5)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">Orthopedics<br><span class="stratn">(N=29)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">Multiple Clinics<br><span class="stratn">(N=4)</span></span></th>
+<th class="firstrow lastrow"><span class="stratlabel">Overall<br><span class="stratn">(N=45)</span></span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="rowlabel firstrow">Gender</td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+</tr>
+<tr>
+<td class="rowlabel">Woman</td>
+<td>7 (100%)</td>
+<td>4 (80.0%)</td>
+<td>22 (75.9%)</td>
+<td>2 (50.0%)</td>
+<td>35 (77.8%)</td>
+</tr>
+<tr>
+<td class="rowlabel">Man</td>
+<td>0 (0%)</td>
+<td>1 (20.0%)</td>
+<td>7 (24.1%)</td>
+<td>1 (25.0%)</td>
+<td>9 (20.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel lastrow">Prefer not to answer</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">1 (25.0%)</td>
+<td class="lastrow">1 (2.2%)</td>
+</tr>
+<tr>
+<td class="rowlabel firstrow">Race</td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+</tr>
+<tr>
+<td class="rowlabel">White</td>
+<td>3 (42.9%)</td>
+<td>2 (40.0%)</td>
+<td>18 (62.1%)</td>
+<td>2 (50.0%)</td>
+<td>25 (55.6%)</td>
+</tr>
+<tr>
+<td class="rowlabel">Black or African American</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>1 (3.4%)</td>
+<td>0 (0%)</td>
+<td>1 (2.2%)</td>
+</tr>
+<tr>
+<td class="rowlabel">American Indian or Native Alaskan</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">Asian</td>
+<td>0 (0%)</td>
+<td>2 (40.0%)</td>
+<td>2 (6.9%)</td>
+<td>0 (0%)</td>
+<td>4 (8.9%)</td>
+</tr>
+<tr>
+<td class="rowlabel">Native Hawaiian or Pacific Islander</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">More than one</td>
+<td>0 (0%)</td>
+<td>0 (0%)</td>
+<td>3 (10.3%)</td>
+<td>0 (0%)</td>
+<td>3 (6.7%)</td>
+</tr>
+<tr>
+<td class="rowlabel">Other</td>
+<td>3 (42.9%)</td>
+<td>1 (20.0%)</td>
+<td>4 (13.8%)</td>
+<td>1 (25.0%)</td>
+<td>9 (20.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel lastrow">Prefer not to answer</td>
+<td class="lastrow">1 (14.3%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">1 (3.4%)</td>
+<td class="lastrow">1 (25.0%)</td>
+<td class="lastrow">3 (6.7%)</td>
+</tr>
+<tr>
+<td class="rowlabel firstrow">Ethnicity</td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+</tr>
+<tr>
+<td class="rowlabel">Hispanic</td>
+<td>3 (42.9%)</td>
+<td>2 (40.0%)</td>
+<td>12 (41.4%)</td>
+<td>1 (25.0%)</td>
+<td>18 (40.0%)</td>
+</tr>
+<tr>
+<td class="rowlabel">Non-Hispanic</td>
+<td>3 (42.9%)</td>
+<td>3 (60.0%)</td>
+<td>17 (58.6%)</td>
+<td>2 (50.0%)</td>
+<td>25 (55.6%)</td>
+</tr>
+<tr>
+<td class="rowlabel lastrow">Prefer not to answer</td>
+<td class="lastrow">1 (14.3%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">1 (25.0%)</td>
+<td class="lastrow">2 (4.4%)</td>
+</tr>
+<tr>
+<td class="rowlabel firstrow">Experience</td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+</tr>
+<tr>
+<td class="rowlabel">Mean (SD)</td>
+<td>6.00 (4.24)</td>
+<td>2.75 (1.26)</td>
+<td>6.79 (7.93)</td>
+<td>4.25 (3.20)</td>
+<td>5.84 (6.55)</td>
+</tr>
+<tr>
+<td class="rowlabel">Median [Min, Max]</td>
+<td>4.50 [3.00, 12.0]</td>
+<td>3.00 [1.00, 4.00]</td>
+<td>3.00 [0, 27.0]</td>
+<td>4.50 [1.00, 7.00]</td>
+<td>3.00 [0, 27.0]</td>
+</tr>
+<tr>
+<td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">3 (42.9%)</td>
+<td class="lastrow">1 (20.0%)</td>
+<td class="lastrow">10 (34.5%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">14 (31.1%)</td>
+</tr>
+<tr>
+<td class="rowlabel firstrow">IC_Total</td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+</tr>
+<tr>
+<td class="rowlabel">Mean (SD)</td>
+<td>3.52 (0.507)</td>
+<td>2.93 (0.273)</td>
+<td>3.22 (0.693)</td>
+<td>3.60 (1.25)</td>
+<td>3.27 (0.699)</td>
+</tr>
+<tr>
+<td class="rowlabel lastrow">Median [Min, Max]</td>
+<td class="lastrow">3.42 [2.67, 4.25]</td>
+<td class="lastrow">2.92 [2.58, 3.33]</td>
+<td class="lastrow">3.17 [2.08, 4.67]</td>
+<td class="lastrow">3.71 [2.00, 5.00]</td>
+<td class="lastrow">3.33 [2.00, 5.00]</td>
+</tr>
+<tr>
+<td class="rowlabel firstrow">EPSC_Total</td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+</tr>
+<tr>
+<td class="rowlabel">Mean (SD)</td>
+<td>4.96 (0.887)</td>
+<td>5.93 (0.951)</td>
+<td>5.23 (0.915)</td>
+<td>5.54 (1.11)</td>
+<td>5.28 (0.931)</td>
+</tr>
+<tr>
+<td class="rowlabel">Median [Min, Max]</td>
+<td>4.86 [3.57, 6.00]</td>
+<td>6.21 [4.57, 6.71]</td>
+<td>5.29 [3.83, 6.86]</td>
+<td>5.36 [4.43, 7.00]</td>
+<td>5.29 [3.57, 7.00]</td>
+</tr>
+<tr>
+<td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">1 (20.0%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">1 (2.2%)</td>
+</tr>
+<tr>
+<td class="rowlabel firstrow">CSACD_Collaboration</td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+<td class="firstrow"></td>
+</tr>
+<tr>
+<td class="rowlabel">Mean (SD)</td>
+<td>3.90 (1.33)</td>
+<td>4.44 (1.55)</td>
+<td>4.20 (1.51)</td>
+<td>5.00 (1.66)</td>
+<td>4.25 (1.47)</td>
+</tr>
+<tr>
+<td class="rowlabel">Median [Min, Max]</td>
+<td>4.00 [2.00, 6.00]</td>
+<td>5.17 [2.67, 5.50]</td>
+<td>4.00 [1.00, 7.00]</td>
+<td>4.83 [3.33, 7.00]</td>
+<td>4.00 [1.00, 7.00]</td>
+</tr>
+<tr>
+<td class="rowlabel lastrow">Missing</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">2 (40.0%)</td>
+<td class="lastrow">2 (6.9%)</td>
+<td class="lastrow">0 (0%)</td>
+<td class="lastrow">4 (8.9%)</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div id="reliability-cronbachs-alpha" class="section level1">
 <h1>Reliability (Cronbach’s Alpha)</h1>
 <p>Rather than printing each subscale separately, results are collected
 into one tidy, sortable table.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>alpha_row <span class="ot">&lt;-</span> <span class="cf">function</span>(data, items, label) {</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  a <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(psych<span class="sc">::</span><span class="fu">alpha</span>(data[, items], <span class="at">check.keys =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>    <span class="at">Scale =</span> label,</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>    <span class="st">`</span><span class="at"># Items</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">length</span>(items),</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>    <span class="st">`</span><span class="at">Raw Alpha</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>raw_alpha, <span class="dv">2</span>),</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>    <span class="st">`</span><span class="at">Std. Alpha</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>std.alpha, <span class="dv">2</span>),</span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>    <span class="st">`</span><span class="at">Mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>mean, <span class="dv">2</span>),</span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>    <span class="st">`</span><span class="at">SD</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>sd, <span class="dv">2</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  )</span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>}</span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>reliability_table <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, ic_items, <span class="st">&quot;IC — All 12 items&quot;</span>),</span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;IC_1&quot;</span>,<span class="st">&quot;IC_2&quot;</span>,<span class="st">&quot;IC_7&quot;</span>,<span class="st">&quot;IC_8&quot;</span>), <span class="st">&quot;IC — Focus subscale&quot;</span>),</span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;IC_3&quot;</span>,<span class="st">&quot;IC_4&quot;</span>,<span class="st">&quot;IC_9&quot;</span>,<span class="st">&quot;IC_10&quot;</span>), <span class="st">&quot;IC — Support subscale&quot;</span>),</span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;IC_5&quot;</span>,<span class="st">&quot;IC_6&quot;</span>,<span class="st">&quot;IC_11&quot;</span>,<span class="st">&quot;IC_12&quot;</span>), <span class="st">&quot;IC — Recognition subscale&quot;</span>),</span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;EPSC_1_r&quot;</span>,<span class="st">&quot;EPSC_2&quot;</span>,<span class="st">&quot;EPSC_3_r&quot;</span>,<span class="st">&quot;EPSC_4&quot;</span>,<span class="st">&quot;EPSC_5_r&quot;</span>,<span class="st">&quot;EPSC_6&quot;</span>,<span class="st">&quot;EPSC_7&quot;</span>), <span class="st">&quot;EPSC — All 7 items (reverse-coded)&quot;</span>),</span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, csacd1_items, <span class="st">&quot;CSACD.I — Collaboration&quot;</span>)</span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>)</span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="fu">pretty_table</span>(reliability_table, <span class="at">caption =</span> <span class="st">&quot;Scale Reliability Summary&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>alpha_row <span class="ot">&lt;-</span> <span class="cf">function</span>(data, items, label) {</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  a <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(psych<span class="sc">::</span><span class="fu">alpha</span>(data[, items], <span class="at">check.keys =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>    <span class="at">Scale =</span> label,</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>    <span class="st">`</span><span class="at"># Items</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">length</span>(items),</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>    <span class="st">`</span><span class="at">Raw Alpha</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>raw_alpha, <span class="dv">2</span>),</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>    <span class="st">`</span><span class="at">Std. Alpha</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>std.alpha, <span class="dv">2</span>),</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    <span class="st">`</span><span class="at">Mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>mean, <span class="dv">2</span>),</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>    <span class="st">`</span><span class="at">SD</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">round</span>(a<span class="sc">$</span>total<span class="sc">$</span>sd, <span class="dv">2</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  )</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>}</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>reliability_table <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, ic_items, <span class="st">&quot;IC — All 12 items&quot;</span>),</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;IC_1&quot;</span>,<span class="st">&quot;IC_2&quot;</span>,<span class="st">&quot;IC_7&quot;</span>,<span class="st">&quot;IC_8&quot;</span>), <span class="st">&quot;IC — Focus subscale&quot;</span>),</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;IC_3&quot;</span>,<span class="st">&quot;IC_4&quot;</span>,<span class="st">&quot;IC_9&quot;</span>,<span class="st">&quot;IC_10&quot;</span>), <span class="st">&quot;IC — Support subscale&quot;</span>),</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;IC_5&quot;</span>,<span class="st">&quot;IC_6&quot;</span>,<span class="st">&quot;IC_11&quot;</span>,<span class="st">&quot;IC_12&quot;</span>), <span class="st">&quot;IC — Recognition subscale&quot;</span>),</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, <span class="fu">c</span>(<span class="st">&quot;EPSC_1_r&quot;</span>,<span class="st">&quot;EPSC_2&quot;</span>,<span class="st">&quot;EPSC_3_r&quot;</span>,<span class="st">&quot;EPSC_4&quot;</span>,<span class="st">&quot;EPSC_5_r&quot;</span>,<span class="st">&quot;EPSC_6&quot;</span>,<span class="st">&quot;EPSC_7&quot;</span>), <span class="st">&quot;EPSC — All 7 items (reverse-coded)&quot;</span>),</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="fu">alpha_row</span>(df, csacd1_items, <span class="st">&quot;CSACD.I — Collaboration&quot;</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>)</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a><span class="fu">pretty_table</span>(reliability_table, <span class="at">caption =</span> <span class="st">&quot;Scale Reliability Summary&quot;</span>)</span></code></pre></div>
 <table class="table table-striped table-hover table-condensed" style="width: auto !important; ">
 <caption>
 Scale Reliability Summary
@@ -2278,21 +2667,21 @@ CSACD.I — Collaboration
 </div>
 <div id="descriptive-statistics" class="section level1">
 <h1>Descriptive Statistics</h1>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>score_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;IC_Total&quot;</span>, <span class="st">&quot;IC_Focus_Self&quot;</span>, <span class="st">&quot;IC_Focus_Clinic&quot;</span>,</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>                 <span class="st">&quot;IC_Support_Self&quot;</span>, <span class="st">&quot;IC_Support_Clinic&quot;</span>,</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                 <span class="st">&quot;IC_Recognition_Self&quot;</span>, <span class="st">&quot;IC_Recognition_Clinic&quot;</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                 <span class="st">&quot;EPSC_Total&quot;</span>, <span class="st">&quot;CSACD_Collaboration&quot;</span>, <span class="st">&quot;CSACD_Satisfaction&quot;</span>,</span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>                 <span class="st">&quot;CSACD_DecisionMaking&quot;</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>desc_table <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">all_of</span>(score_vars)) <span class="sc">%&gt;%</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  psych<span class="sc">::</span><span class="fu">describe</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&quot;Variable&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>  <span class="fu">select</span>(Variable, n, mean, sd, min, max, skew, kurtosis) <span class="sc">%&gt;%</span></span>
-<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
-<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a></span>
-<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="fu">pretty_table</span>(desc_table, <span class="at">caption =</span> <span class="st">&quot;Descriptive Statistics — Composite Scores&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>score_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;IC_Total&quot;</span>, <span class="st">&quot;IC_Focus_Self&quot;</span>, <span class="st">&quot;IC_Focus_Clinic&quot;</span>,</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>                 <span class="st">&quot;IC_Support_Self&quot;</span>, <span class="st">&quot;IC_Support_Clinic&quot;</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>                 <span class="st">&quot;IC_Recognition_Self&quot;</span>, <span class="st">&quot;IC_Recognition_Clinic&quot;</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>                 <span class="st">&quot;EPSC_Total&quot;</span>, <span class="st">&quot;CSACD_Collaboration&quot;</span>, <span class="st">&quot;CSACD_Satisfaction&quot;</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>                 <span class="st">&quot;CSACD_DecisionMaking&quot;</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>desc_table <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">all_of</span>(score_vars)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  psych<span class="sc">::</span><span class="fu">describe</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&quot;Variable&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  <span class="fu">select</span>(Variable, n, mean, sd, min, max, skew, kurtosis) <span class="sc">%&gt;%</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="fu">pretty_table</span>(desc_table, <span class="at">caption =</span> <span class="st">&quot;Descriptive Statistics — Composite Scores&quot;</span>)</span></code></pre></div>
 <table class="table table-striped table-hover table-condensed" style="width: auto !important; ">
 <caption>
 Descriptive Statistics — Composite Scores
@@ -2617,17 +3006,17 @@ CSACD_DecisionMaking
 </div>
 <div id="clinic-comparisons" class="section level1">
 <h1>Clinic Comparisons</h1>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>means_by_clinic <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Clinic)) <span class="sc">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Clinic) <span class="sc">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(score_vars),</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>                    <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span><span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>                         <span class="at">sd =</span> <span class="sc">~</span><span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>                    <span class="at">.names =</span> <span class="st">&quot;{.col}_{.fn}&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
-<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="fu">pretty_table</span>(means_by_clinic, <span class="at">caption =</span> <span class="st">&quot;Mean (SD) of Each Score by Clinic&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>means_by_clinic <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Clinic)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Clinic) <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(<span class="fu">all_of</span>(score_vars),</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>                    <span class="fu">list</span>(<span class="at">mean =</span> <span class="sc">~</span><span class="fu">mean</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>                         <span class="at">sd =</span> <span class="sc">~</span><span class="fu">sd</span>(.x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)),</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>                    <span class="at">.names =</span> <span class="st">&quot;{.col}_{.fn}&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="fu">pretty_table</span>(means_by_clinic, <span class="at">caption =</span> <span class="st">&quot;Mean (SD) of Each Score by Clinic&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="fu">scroll_box</span>(<span class="at">width =</span> <span class="st">&quot;100%&quot;</span>)</span></code></pre></div>
 <div style="border: 1px solid #ddd; padding: 5px; overflow-x: scroll; width:100%; ">
 <table class="table table-striped table-hover table-condensed" style="width: auto !important; ">
 <caption>
@@ -2994,19 +3383,19 @@ Multiple Clinics
 </tbody>
 </table>
 </div>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>anova_by_clinic <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(score_vars, <span class="cf">function</span>(var) {</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  res <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Clinic)) <span class="sc">%&gt;%</span></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>    <span class="fu">anova_test</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(var, <span class="st">&quot;~ Clinic&quot;</span>)))</span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(res)</span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="fu">class</span>(res) <span class="ot">&lt;-</span> <span class="st">&quot;data.frame&quot;</span></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">Variable =</span> var, res)</span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>})</span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>anova_by_clinic <span class="ot">&lt;-</span> anova_by_clinic <span class="sc">%&gt;%</span></span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="fu">pretty_table</span>(anova_by_clinic, <span class="at">caption =</span> <span class="st">&quot;One-Way ANOVA: Each Score by Clinic&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>anova_by_clinic <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(score_vars, <span class="cf">function</span>(var) {</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  res <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Clinic)) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>    <span class="fu">anova_test</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(var, <span class="st">&quot;~ Clinic&quot;</span>)))</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(res)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="fu">class</span>(res) <span class="ot">&lt;-</span> <span class="st">&quot;data.frame&quot;</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">cbind</span>(<span class="at">Variable =</span> var, res)</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>})</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>anova_by_clinic <span class="ot">&lt;-</span> anova_by_clinic <span class="sc">%&gt;%</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="fu">pretty_table</span>(anova_by_clinic, <span class="at">caption =</span> <span class="st">&quot;One-Way ANOVA: Each Score by Clinic&quot;</span>)</span></code></pre></div>
 <table class="table table-striped table-hover table-condensed" style="width: auto !important; ">
 <caption>
 One-Way ANOVA: Each Score by Clinic
