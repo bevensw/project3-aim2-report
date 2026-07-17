@@ -283,20 +283,6 @@ means_by_clinic <- df %>%
 
 pretty_table(means_by_clinic, caption = "Mean (SD) of Each Score by Clinic") %>%
   scroll_box(width = "100%")
-
-anova_by_clinic <- map_dfr(score_vars, function(var) {
-  res <- df %>%
-    filter(!is.na(Clinic)) %>%
-    anova_test(as.formula(paste(var, "~ Clinic")))
-  res <- as.data.frame(res)
-  class(res) <- "data.frame"
-  cbind(Variable = var, res)
-})
-
-anova_by_clinic <- anova_by_clinic %>%
-  mutate(across(where(is.numeric), ~ round(.x, 2)))
-
-pretty_table(anova_by_clinic, caption = "One-Way ANOVA: Each Score by Clinic")
 ```
 
 
