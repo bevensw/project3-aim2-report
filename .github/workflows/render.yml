@@ -9,6 +9,8 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
+      - name: Create docs folder
+        run: mkdir -p docs
       - name: Knit Rmd
         run: |
           Rscript -e 'rmarkdown::render("Descriptivestats.Rmd", output_file = "docs/index.html")'
