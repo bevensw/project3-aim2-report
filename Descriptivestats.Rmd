@@ -120,6 +120,24 @@ df <- df %>%
                                         "Orthopedics",
                                         "Multiple Clinics"))
   )
+
+df <- df %>%
+  mutate(
+    Gender = factor(Gender,
+                     levels = c(1, 2, 7),
+                     labels = c("Woman", "Man", "Prefer not to answer")),
+    
+    Race = factor(Race,
+                   levels = c(1, 2, 3, 4, 5, 6, 7, 8),
+                   labels = c("White", "Black or African American", 
+                              "American Indian or Native Alaskan",
+                              "Asian", "Native Hawaiian or Pacific Islander",
+                              "More than one", "Other", "Prefer not to answer")),
+    
+    Ethnicity = factor(Ethnicity,
+                        levels = c(1, 2, 3),
+                        labels = c("Hispanic", "Non-Hispanic", "Prefer not to answer"))
+  )
 ```
 
 # Scale Scoring
@@ -194,7 +212,15 @@ df <- df %>%
 clinic_table <- df %>% tabyl(Clinic) %>%
   mutate(percent = round(percent * 100, 1))
 pretty_table(clinic_table, caption = "Respondents by Clinic")
+
+
+#table 1
+table1::table1(~ Gender + Race + Ethnicity + Experience + 
+                 IC_Total + EPSC_Total + CSACD_Collaboration | Clinic, 
+               data = df)
 ```
+
+
 
 # Reliability (Cronbach's Alpha)
 
