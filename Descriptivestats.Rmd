@@ -1,12 +1,20 @@
 ---
-title: "Project3Aim2_Dataprocessing"
+title: "Project 3, Aim 2: Data Processing & Analysis"
 author: "WB"
 date: "2026-07-17"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    highlight: tango
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    code_folding: hide
+    df_print: kable
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 rm(list = ls())
 library(memisc)
 library(haven)
@@ -35,9 +43,17 @@ library(survey)
 library(pollster)
 library(reshape2)
 library(multilevel)
-library(psych)      
-library(janitor)    
-library(rstatix)    
+library(psych)
+library(janitor)
+library(rstatix)
+
+# Small helper used throughout to render a data frame as a clean, styled table
+pretty_table <- function(df, caption = NULL) {
+  df %>%
+    kable(caption = caption, digits = 2) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                  full_width = FALSE, position = "left")
+}
 ```
 
 ```{r working directory and calling our file, include=FALSE}
@@ -47,19 +63,25 @@ df_raw  <- read.csv("BaselineSurveyExport_071726.csv")
 df  <- as_tibble(df_raw)
 ```
 
-## Initial cleaning/renaming
+# Overview
 
-```{r cleaning, echo=FALSE}
+This report summarizes cleaning, scale scoring, reliability, descriptive
+statistics, and clinic-level comparisons for the Aim 2 baseline survey
+(Implementation Climate, Team Psychological Safety, and Collaboration &
+Satisfaction About Care Decisions).
+
+# Initial Cleaning & Renaming
+
+```{r cleaning}
 # Remove exported qualtrics labels first two rows
 df <- df_raw %>%
-  # Remove first two rows (header text and values from Qualtrics export)
   slice(-(1:2))
 
 # Filter if unfinished
-df <- df %>% 
-  filter(Finished==1)
+df <- df %>%
+  filter(Finished == 1)
 
-# Rename other vars 
+# Rename other vars
 df <- df %>%
   rename(ID = `Last.4.Dig.Phone..`,
          position = `Job.Title`)
@@ -74,23 +96,23 @@ df <- df %>%
     Gender = as.factor(Gender),
     Race = as.factor(Race),
     Ethnicity = as.factor(Ethnicity),
-    Job.Title = as.factor(position),
+    position = as.factor(position),
     Clinic = as.factor(Clinic),
-    Experience = as.numeric(Experience) 
+    Experience = suppressWarnings(as.numeric(Experience))
   )
 
 # Clean the clinic names
 df <- df %>%
   mutate(
-    Clinic_raw = as.character(Clinic),   # preserve original coded values before overwriting
+    Clinic_raw = as.character(Clinic),
     Clinic = case_when(
-      is.na(Clinic_raw)                ~ NA_character_,
-      str_detect(Clinic_raw, ",")      ~ "Multiple Clinics",  # catches "1,4" etc.
-      Clinic_raw == "1"                ~ "Adolescent Young Adult Medicine",
-      Clinic_raw == "2"                ~ "Endocrinology",
-      Clinic_raw == "3"                ~ "Gastroenterology",
-      Clinic_raw == "4"                ~ "Orthopedics",
-      TRUE                              ~ NA_character_
+      is.na(Clinic_raw)           ~ NA_character_,
+      str_detect(Clinic_raw, ",") ~ "Multiple Clinics",
+      Clinic_raw == "1"           ~ "Adolescent Young Adult Medicine",
+      Clinic_raw == "2"           ~ "Endocrinology",
+      Clinic_raw == "3"           ~ "Gastroenterology",
+      Clinic_raw == "4"           ~ "Orthopedics",
+      TRUE                        ~ NA_character_
     ),
     Clinic = factor(Clinic, levels = c("Adolescent Young Adult Medicine",
                                         "Endocrinology",
@@ -98,42 +120,41 @@ df <- df %>%
                                         "Orthopedics",
                                         "Multiple Clinics"))
   )
-
 ```
 
-## Scoring and descriptive stats
+# Scale Scoring
 
-```{r scoring, echo=FALSE}
-# Implementation Climate Scale scoring
-## Scale: 1 (Completely disagree) to 5 (Completely agree). No reverse-coded items.
+## Implementation Climate (IC)
+
+Scale: 1 (Completely disagree) to 5 (Completely agree). No reverse-coded items.
+
+```{r ic scoring}
 ic_items <- paste0("IC_", 1:12)
 stopifnot(all(ic_items %in% names(df)))
 
-## Stored as numeric strings so convert to numbers
 df <- df %>%
-  mutate(across(all_of(ic_items), as.numeric))
-
-df <- df %>%
+  mutate(across(all_of(ic_items), as.numeric)) %>%
   mutate(
-    IC_Focus_Self        = rowMeans(across(c(IC_1, IC_2)), na.rm = TRUE),
-    IC_Focus_Clinic       = rowMeans(across(c(IC_7, IC_8)), na.rm = TRUE),
-    IC_Support_Self      = rowMeans(across(c(IC_3, IC_4)), na.rm = TRUE),
-    IC_Support_Clinic     = rowMeans(across(c(IC_9, IC_10)), na.rm = TRUE),
-    IC_Recognition_Self  = rowMeans(across(c(IC_5, IC_6)), na.rm = TRUE),
-    IC_Recognition_Clinic = rowMeans(across(c(IC_11, IC_12)), na.rm = TRUE),
+    IC_Focus_Self         = rowMeans(across(c(IC_1, IC_2)), na.rm = TRUE),
+    IC_Focus_Clinic        = rowMeans(across(c(IC_7, IC_8)), na.rm = TRUE),
+    IC_Support_Self       = rowMeans(across(c(IC_3, IC_4)), na.rm = TRUE),
+    IC_Support_Clinic      = rowMeans(across(c(IC_9, IC_10)), na.rm = TRUE),
+    IC_Recognition_Self   = rowMeans(across(c(IC_5, IC_6)), na.rm = TRUE),
+    IC_Recognition_Clinic  = rowMeans(across(c(IC_11, IC_12)), na.rm = TRUE),
     IC_Total = rowMeans(across(all_of(ic_items)), na.rm = TRUE)
   )
+```
 
-# Scoring Edmonson's Psych Safety
-## Scale: 1-7. Items 1, 3, 5 are reverse-scored (8 - x on a 1-7 scale).
+## Team Psychological Safety (EPSC, Edmondson)
+
+Scale: 1–7. Items 1, 3, and 5 are reverse-scored (`8 - x`).
+
+```{r epsc scoring}
 epsc_items <- paste0("EPSC_", 1:7)
 stopifnot(all(epsc_items %in% names(df)))
 
-## Strings to numbers
 df <- df %>%
-  mutate(across(all_of(epsc_items), as.numeric))
-
-df <- df %>%
+  mutate(across(all_of(epsc_items), as.numeric)) %>%
   mutate(
     EPSC_1_r = 8 - EPSC_1,
     EPSC_3_r = 8 - EPSC_3,
@@ -143,48 +164,63 @@ df <- df %>%
       na.rm = TRUE
     )
   )
+```
 
-# Scoring CSACD
-# CSACD.I  = Collaboration (6 items, 0-6 scale) -> average
-## CSACD.II = Satisfaction with decision (1 item) -> use as-is
-## CSACD.III = Decision-making pattern (2 items) -> average
+## Collaboration & Satisfaction About Care Decisions (CSACD)
+
+- **CSACD.I** — Collaboration (6 items, 1–7 scale) → averaged
+- **CSACD.II** — Satisfaction with decision (1 item) → used as-is
+- **CSACD.III** — Decision-making pattern (2 items, 1–7 scale) → averaged
+
+```{r csacd scoring}
 csacd1_items <- paste0("CSACD.I_", 1:6)
 stopifnot(all(csacd1_items %in% names(df)))
 
-## Strings to numbers 
-likert_cols <- c(paste0("IC_", 1:12), paste0("EPSC_", 1:7), 
+likert_cols <- c(paste0("IC_", 1:12), paste0("EPSC_", 1:7),
                   paste0("CSACD.I_", 1:6), "CSACD.II_1", "CSACD.III_1", "CSACD.III_2")
 
-df <- df %>% mutate(across(all_of(likert_cols), as.numeric))
-
 df <- df %>%
+  mutate(across(all_of(likert_cols), as.numeric)) %>%
   mutate(
     CSACD_Collaboration = rowMeans(across(all_of(csacd1_items)), na.rm = TRUE),
     CSACD_Satisfaction   = CSACD.II_1,
     CSACD_DecisionMaking = rowMeans(across(c(CSACD.III_1, CSACD.III_2)), na.rm = TRUE)
   )
-
 ```
 
-``` {r descriptives, echo=FALSE}
-# Cronbach's alpha calcs
-alpha_report <- function(data, items, label) {
-  cat("\n---", label, "---\n")
-  a <- psych::alpha(data[, items], check.keys = TRUE)
-  print(round(a$total, 2))
-  invisible(a)
+# Reliability (Cronbach's Alpha)
+
+Rather than printing each subscale separately, results are collected into one
+tidy, sortable table.
+
+```{r reliability}
+alpha_row <- function(data, items, label) {
+  a <- suppressWarnings(psych::alpha(data[, items], check.keys = TRUE))
+  tibble(
+    Scale = label,
+    `# Items` = length(items),
+    `Raw Alpha` = round(a$total$raw_alpha, 2),
+    `Std. Alpha` = round(a$total$std.alpha, 2),
+    `Mean` = round(a$total$mean, 2),
+    `SD` = round(a$total$sd, 2)
+  )
 }
 
-alpha_report(df, ic_items, "IC - all 12 items")
-alpha_report(df, c("IC_1","IC_2","IC_7","IC_8"), "IC - Focus subscale (4 items)")
-alpha_report(df, c("IC_3","IC_4","IC_9","IC_10"), "IC - Support subscale (4 items)")
-alpha_report(df, c("IC_5","IC_6","IC_11","IC_12"), "IC - Recognition subscale (4 items)")
-alpha_report(df, c("EPSC_1_r","EPSC_2","EPSC_3_r","EPSC_4","EPSC_5_r","EPSC_6","EPSC_7"), "EPSC - all 7 items (reverse-coded)")
-alpha_report(df, csacd1_items, "CSACD.I - Collaboration (6 items)")
+reliability_table <- bind_rows(
+  alpha_row(df, ic_items, "IC — All 12 items"),
+  alpha_row(df, c("IC_1","IC_2","IC_7","IC_8"), "IC — Focus subscale"),
+  alpha_row(df, c("IC_3","IC_4","IC_9","IC_10"), "IC — Support subscale"),
+  alpha_row(df, c("IC_5","IC_6","IC_11","IC_12"), "IC — Recognition subscale"),
+  alpha_row(df, c("EPSC_1_r","EPSC_2","EPSC_3_r","EPSC_4","EPSC_5_r","EPSC_6","EPSC_7"), "EPSC — All 7 items (reverse-coded)"),
+  alpha_row(df, csacd1_items, "CSACD.I — Collaboration")
+)
+
+pretty_table(reliability_table, caption = "Scale Reliability Summary")
 ```
 
-``` {r descriptives 2, echo=FALSE}
+# Descriptive Statistics
 
+```{r descriptives}
 score_vars <- c("IC_Total", "IC_Focus_Self", "IC_Focus_Clinic",
                  "IC_Support_Self", "IC_Support_Clinic",
                  "IC_Recognition_Self", "IC_Recognition_Clinic",
@@ -199,32 +235,57 @@ desc_table <- df %>%
   select(Variable, n, mean, sd, min, max, skew, kurtosis) %>%
   mutate(across(where(is.numeric), ~ round(.x, 2)))
 
-print(desc_table)
-
-# Demographic breakdown
-df %>% tabyl(position)
-df %>% tabyl(Clinic)
-
+pretty_table(desc_table, caption = "Descriptive Statistics — Composite Scores")
 ```
 
-```{comparisons, echo=FALSE}
-# Clinic comparisons
-score_vars <- c("IC_Total", "IC_Focus_Self", "IC_Focus_Clinic",
-                 "IC_Support_Self", "IC_Support_Clinic",
-                 "IC_Recognition_Self", "IC_Recognition_Clinic",
-                 "EPSC_Total", "CSACD_Collaboration", "CSACD_Satisfaction",
-                 "CSACD_DecisionMaking")
+## Sample Composition
 
-## Descriptive means/SD by Clinic, for every score variable at once
+```{r demographics}
+position_table <- df %>% tabyl(position) %>%
+  mutate(percent = round(percent * 100, 1))
+pretty_table(position_table, caption = "Respondents by Position") %>%
+  scroll_box(height = "300px")
+
+clinic_table <- df %>% tabyl(Clinic) %>%
+  mutate(percent = round(percent * 100, 1))
+pretty_table(clinic_table, caption = "Respondents by Clinic")
+```
+
+# Clinic Comparisons
+
+```{r comparisons}
 means_by_clinic <- df %>%
+  filter(!is.na(Clinic)) %>%
   group_by(Clinic) %>%
-  summarise(across(all_of(score_vars), 
-                    list(mean = ~mean(.x, na.rm = TRUE), 
+  summarise(across(all_of(score_vars),
+                    list(mean = ~mean(.x, na.rm = TRUE),
                          sd = ~sd(.x, na.rm = TRUE)),
                     .names = "{.col}_{.fn}")) %>%
   mutate(across(where(is.numeric), ~ round(.x, 2)))
 
-print(means_by_clinic)
+pretty_table(means_by_clinic, caption = "Mean (SD) of Each Score by Clinic") %>%
+  scroll_box(width = "100%")
+
+anova_by_clinic <- map_dfr(score_vars, function(var) {
+  res <- df %>%
+    filter(!is.na(Clinic)) %>%
+    anova_test(as.formula(paste(var, "~ Clinic")))
+  res <- as.data.frame(res)
+  class(res) <- "data.frame"
+  cbind(Variable = var, res)
+})
+
+anova_by_clinic <- anova_by_clinic %>%
+  mutate(across(where(is.numeric), ~ round(.x, 2)))
+
+pretty_table(anova_by_clinic, caption = "One-Way ANOVA: Each Score by Clinic")
 ```
+
+
+##Remember to use this is to update code locally, which will update the files 
+cd ~/Documents/UCSD/project3-aim2-report
+git add Descriptivestats.Rmd
+git commit -m "Update analysis"
+git push
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
