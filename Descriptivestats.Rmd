@@ -117,7 +117,7 @@ df  <- as_tibble(df_raw)
 
 # Overview
 
-Preliminary cleaning and analysis of the Project 3, Aim 2 baseline survey. Results come first; the full data cleaning and scoring code is in [Methods](#methods) at the end. Use the **Code** buttons to show or hide the R code behind any table or chart.
+This document details preliminary/interim analysis from the Project 3, Aim 2 baseline surveys with 4 clinics: Orthopedics, Gastroenterology, Adolescent and Young Adult Medicine and Endocrinology. Results are presented first, then Methods at the end **may end up deepening the methods if necessary**
 
 # Key Findings
 
@@ -729,6 +729,6 @@ Personal reminder (hidden from the rendered page): to publish an update
 cd ~/Documents/UCSD/project3-aim2-report
 git pull origin main
 git add Descriptivestats.Rmd
-git commit -m "Update analysis"
+git commit -m "Added Overview"
 git push
 -->
