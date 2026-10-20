@@ -1,0 +1,663 @@
+---
+title: "Project 3, Aim 2: Data Processing & Analysis"
+author: "WB"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: cosmo
+    highlight: tango
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    code_folding: hide
+    df_print: kable
+---
+
+```{css, echo=FALSE}
+.key-findings {
+  background: #f4f8fb;
+  border-left: 5px solid #2780e3;
+  border-radius: 6px;
+  padding: 14px 20px 4px 20px;
+  margin: 10px 0 24px 0;
+}
+.key-findings li { margin-bottom: 8px; }
+.note-small { color: #6c757d; font-size: 0.92em; }
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
+                      fig.align = "center", fig.retina = 2, dpi = 110)
+rm(list = ls())
+library(memisc)
+library(haven)
+library(epiDisplay)
+library(forcats)
+library(dplyr)
+library(ggplot2)
+library(interactions)
+library(tidyr)
+library(tidyverse)
+library(stringr)
+library(readxl)
+library(table1)
+library(knitr)
+library(kableExtra)
+library(purrr)
+library(shiny)
+library(reactable)
+library(gridExtra)
+library(ggbreak)
+library(gtsummary)
+library(flextable)
+library(officer)
+library(ipw)
+library(survey)
+library(pollster)
+library(reshape2)
+library(multilevel)
+library(psych)
+library(janitor)
+library(rstatix)
+
+# Several packages above define select()/filter(); make sure dplyr's versions win
+select <- dplyr::select
+filter <- dplyr::filter
+
+# Small helper used throughout to render a data frame as a clean, styled table
+pretty_table <- function(df, caption = NULL, ...) {
+  df %>%
+    kable(format = "html", caption = caption, digits = 2, ...) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                  full_width = FALSE, position = "left")
+}
+
+# Readable names for the composite scores, used in tables and charts
+score_labels <- c(
+  IC_Total              = "Implementation Climate (total)",
+  IC_Focus_Self         = "IC: Focus (self)",
+  IC_Focus_Clinic       = "IC: Focus (clinic)",
+  IC_Support_Self       = "IC: Support (self)",
+  IC_Support_Clinic     = "IC: Support (clinic)",
+  IC_Recognition_Self   = "IC: Recognition (self)",
+  IC_Recognition_Clinic = "IC: Recognition (clinic)",
+  EPSC_Total            = "Team Psychological Safety",
+  CSACD_Collaboration   = "CSACD: Collaboration",
+  CSACD_Satisfaction    = "CSACD: Satisfaction",
+  CSACD_DecisionMaking  = "CSACD: Decision-making"
+)
+score_vars <- names(score_labels)
+
+# Shared chart look
+theme_report <- function() {
+  theme_minimal(base_size = 12) +
+    theme(panel.grid.minor = element_blank(),
+          panel.grid.major.y = element_blank(),
+          plot.title = element_text(face = "bold", size = 13),
+          plot.subtitle = element_text(color = "grey35"),
+          plot.title.position = "plot",
+          legend.position = "top",
+          strip.text = element_text(face = "bold", hjust = 0))
+}
+col_self   <- "#E07B39"
+col_clinic <- "#2780E3"
+```
+
+```{r working directory and calling our file, include=FALSE}
+data_dir <- "/Users/will/Documents/UCSD/Project 3/Aim 2/Card Sort Data/"
+df_raw  <- read.csv(file.path(data_dir, "BaselineSurveyExport_080626.csv"))
+
+df  <- as_tibble(df_raw)
+```
+
+```{r prepare data, include=FALSE, ref.label=c("cleaning", "ic scoring", "epsc scoring", "csacd scoring")}
+# Runs the cleaning and scoring code shown in the "Methods" section at the end,
+# so results can be presented first.
+```
+
+# Overview
+
+Preliminary cleaning and analysis of the Project 3, Aim 2 baseline survey. Results come first; the full data cleaning and scoring code is in [Methods](#methods) at the end. Use the **Code** buttons to show or hide the R code behind any table or chart.
+
+# Key Findings
+
+```{r key findings data, include=FALSE}
+domains <- c("Focus", "Support", "Recognition")
+
+ic_domain <- tibble(Domain = domains) %>%
+  mutate(
+    Self   = map_dbl(Domain, ~ mean(df[[paste0("IC_", .x, "_Self")]], na.rm = TRUE)),
+    Clinic = map_dbl(Domain, ~ mean(df[[paste0("IC_", .x, "_Clinic")]], na.rm = TRUE))
+  )
+
+n_total   <- nrow(df)
+clinic_n  <- df %>% filter(!is.na(Clinic)) %>% count(Clinic)
+largest   <- clinic_n %>% slice_max(n, n = 1, with_ties = FALSE)
+smallest  <- clinic_n %>% slice_min(n, n = 1, with_ties = FALSE)
+lowest    <- ic_domain %>% slice_min(Self, n = 1, with_ties = FALSE)
+others    <- ic_domain %>% filter(Domain != lowest$Domain)
+all_higher <- all(ic_domain$Clinic > ic_domain$Self)
+
+f2 <- function(x) formatC(x, format = "f", digits = 2)
+pct <- function(x) paste0(round(100 * x), "%")
+```
+
+::: {.key-findings}
+
+```{r key findings, echo=FALSE, results="asis"}
+gap_text <- paste0(ic_domain$Domain, " ", f2(ic_domain$Clinic), " vs. ", f2(ic_domain$Self),
+                   collapse = "; ")
+
+bullets <- c(
+  paste0("**", n_total, " staff completed the baseline survey** across ", nrow(clinic_n),
+         " clinics. ", largest$Clinic, " makes up ", pct(largest$n / sum(clinic_n$n)),
+         " of the sample."),
+  paste0("**", lowest$Domain, " is the weakest part of implementation climate.** ",
+         "Staff rated their own experience of it at ", f2(lowest$Self), " on a 1–5 scale, ",
+         "compared with ", f2(others$Self[1]), " for ", others$Domain[1], " and ",
+         f2(others$Self[2]), " for ", others$Domain[2], "."),
+  if (all_higher) {
+    paste0("**Staff rate their clinic more favorably than themselves** in all three areas ",
+           "(clinic vs. self: ", gap_text, "). See [Self vs. Clinic](#self-vs-clinic).")
+  } else {
+    paste0("**Clinic and self ratings differ by area** (clinic vs. self: ", gap_text,
+           "). See [Self vs. Clinic](#self-vs-clinic).")
+  },
+  paste0("**Team psychological safety averages ", f2(mean(df$EPSC_Total, na.rm = TRUE)),
+         "** on a 1–7 scale, and collaboration on care decisions averages ",
+         f2(mean(df$CSACD_Collaboration, na.rm = TRUE)), "."),
+  paste0("**Clinic groups are small** (", smallest$Clinic, ": n = ", smallest$n,
+         "), so differences between clinics should be read as descriptive.")
+)
+
+cat(paste0("- ", bullets, collapse = "\n"), "\n")
+```
+
+:::
+
+# Sample
+
+```{r demographics}
+clinic_table <- df %>%
+  tabyl(Clinic) %>%
+  adorn_totals("row") %>%
+  mutate(percent = round(percent * 100, 1))
+
+pretty_table(clinic_table, caption = "Respondents by Clinic")
+
+# Readable row names for Table 1
+table1::label(df$position_group)      <- "Position"
+table1::label(df$Experience)          <- "Experience (years)"
+table1::label(df$IC_Total)            <- "Implementation Climate (total)"
+table1::label(df$EPSC_Total)          <- "Team Psychological Safety"
+table1::label(df$CSACD_Collaboration) <- "CSACD: Collaboration"
+
+table1::table1(~ Gender + Race + Ethnicity + position_group + Experience +
+                 IC_Total + EPSC_Total + CSACD_Collaboration | Clinic,
+               data = df)
+```
+
+# Self vs. Clinic {#self-vs-clinic}
+
+Each Implementation Climate area is asked twice: about the respondent's own experience ("self") and about their clinic as a whole ("clinic").
+
+```{r self vs clinic plot, fig.width=8, fig.height=3.6}
+ci_long <- df %>%
+  select(starts_with("IC_") & (ends_with("_Self") | ends_with("_Clinic"))) %>%
+  pivot_longer(everything(), names_to = c("Domain", "Rater"),
+               names_pattern = "IC_(.*)_(Self|Clinic)") %>%
+  filter(!is.na(value)) %>%
+  group_by(Domain, Rater) %>%
+  summarise(n = n(), mean = mean(value), se = sd(value) / sqrt(n),
+            lo = mean - qt(0.975, n - 1) * se,
+            hi = mean + qt(0.975, n - 1) * se, .groups = "drop") %>%
+  mutate(Domain = factor(Domain, levels = rev(domains)),
+         Rater  = factor(Rater, levels = c("Self", "Clinic")))
+
+seg <- ci_long %>% select(Domain, Rater, mean) %>%
+  pivot_wider(names_from = Rater, values_from = mean)
+
+ggplot(ci_long, aes(x = mean, y = Domain, color = Rater)) +
+  geom_segment(data = seg, aes(x = Self, xend = Clinic, y = Domain, yend = Domain),
+               inherit.aes = FALSE, color = "grey75", linewidth = 2.5) +
+  geom_errorbar(aes(xmin = lo, xmax = hi), width = 0.15, linewidth = 0.6, alpha = 0.6,
+                orientation = "y") +
+  geom_point(size = 4.5) +
+  geom_text(aes(label = f2(mean)), vjust = -1.3, size = 3.6, show.legend = FALSE) +
+  scale_color_manual(values = c(Self = col_self, Clinic = col_clinic),
+                     labels = c(Self = "About myself", Clinic = "About my clinic"), name = NULL) +
+  scale_x_continuous(limits = c(1, 5), breaks = 1:5,
+                     labels = c("1\nCompletely\ndisagree", "2", "3", "4", "5\nCompletely\nagree")) +
+  labs(title = if (all_higher) "Staff rate their clinic higher than themselves in every area"
+               else "Self and clinic ratings of implementation climate",
+       subtitle = "Mean with 95% confidence interval",
+       x = NULL, y = NULL) +
+  theme_report()
+```
+
+```{r self vs clinic tests}
+paired_tests <- map_dfr(domains, function(d) {
+  s <- df[[paste0("IC_", d, "_Self")]]
+  cl <- df[[paste0("IC_", d, "_Clinic")]]
+  ok <- !is.na(s) & !is.na(cl)
+  w <- suppressWarnings(wilcox.test(cl[ok], s[ok], paired = TRUE, exact = FALSE))
+  tibble(Area = d, n = sum(ok),
+         `Self mean` = mean(s[ok]), `Clinic mean` = mean(cl[ok]),
+         `Difference (clinic − self)` = mean(cl[ok] - s[ok]),
+         `p (Wilcoxon signed-rank)` = w$p.value)
+}) %>%
+  mutate(`p (Holm-adjusted)` = p.adjust(`p (Wilcoxon signed-rank)`, method = "holm"),
+         across(c(`p (Wilcoxon signed-rank)`, `p (Holm-adjusted)`),
+                ~ ifelse(.x < 0.001, "< .001", formatC(.x, format = "f", digits = 3))))
+
+pretty_table(paired_tests, caption = "Paired comparison of self vs. clinic ratings")
+```
+
+# Item-Level Responses
+
+How respondents answered each of the 12 Implementation Climate items.
+
+```{r ic items plot, fig.width=9, fig.height=5.2}
+ic_item_info <- tibble(
+  item   = paste0("IC_", 1:12),
+  Domain = rep(c("Focus", "Focus", "Support", "Support", "Recognition", "Recognition"), 2),
+  Rater  = rep(c("Self", "Clinic"), each = 6)
+) %>%
+  mutate(label = paste0(Domain, " · ", tolower(Rater), " (", item, ")"))
+
+ic_items_long <- df %>%
+  select(all_of(ic_item_info$item)) %>%
+  pivot_longer(everything(), names_to = "item", values_to = "response") %>%
+  filter(!is.na(response)) %>%
+  count(item, response) %>%
+  group_by(item) %>% mutate(share = n / sum(n)) %>% ungroup() %>%
+  left_join(ic_item_info, by = "item") %>%
+  mutate(response = factor(response, levels = 5:1),
+         label = factor(label, levels = rev(ic_item_info$label[order(
+           match(ic_item_info$Domain, domains), ic_item_info$Rater == "Clinic")])))
+
+agree_share <- ic_items_long %>%
+  filter(response %in% c("4", "5")) %>%
+  group_by(label) %>% summarise(agree = sum(share), .groups = "drop")
+
+ggplot(ic_items_long, aes(x = share, y = label, fill = response)) +
+  geom_col(width = 0.72) +
+  geom_text(data = agree_share, aes(x = 1.02, y = label, label = pct(agree)),
+            inherit.aes = FALSE, hjust = 0, size = 3.4, color = "grey25") +
+  scale_fill_manual(values = c("5" = "#1F5FA8", "4" = "#7FB1E3", "3" = "#D9D9D9",
+                               "2" = "#F2A97E", "1" = "#C8553D"),
+                    breaks = as.character(1:5),
+                    labels = c("1 Completely disagree", "2", "3", "4", "5 Completely agree"),
+                    name = NULL) +
+  scale_x_continuous(labels = function(x) paste0(round(x * 100), "%"),
+                     breaks = seq(0, 1, 0.25), expand = expansion(mult = c(0, 0.08))) +
+  labs(title = "Share of respondents choosing each answer",
+       subtitle = "Number at right = % who agree (4 or 5)", x = NULL, y = NULL) +
+  coord_cartesian(clip = "off") +
+  theme_report() +
+  guides(fill = guide_legend(nrow = 1, reverse = FALSE))
+```
+
+# Clinic Comparisons {.tabset .tabset-pills}
+
+## Distributions
+
+Each dot is one respondent; boxes show the median and middle 50%.
+
+```{r clinic boxplots, fig.width=9, fig.height=5}
+main_scores <- c("IC_Total", "EPSC_Total", "CSACD_Collaboration")
+facet_titles <- c(IC_Total = "Implementation Climate (1–5)",
+                  EPSC_Total = "Psychological Safety (1–7)",
+                  CSACD_Collaboration = "Collaboration (1–7)")
+
+box_df <- df %>%
+  filter(!is.na(Clinic)) %>%
+  add_count(Clinic, name = "n_clinic") %>%
+  mutate(Clinic_lab = paste0(Clinic, " (n=", n_clinic, ")")) %>%
+  select(Clinic_lab, all_of(main_scores)) %>%
+  pivot_longer(-Clinic_lab, names_to = "score", values_to = "value") %>%
+  filter(!is.na(value)) %>%
+  mutate(score = factor(facet_titles[score], levels = facet_titles[main_scores]))
+
+set.seed(1)
+ggplot(box_df, aes(x = value, y = fct_rev(Clinic_lab))) +
+  geom_boxplot(outlier.shape = NA, fill = "#EAF2FB", color = "#5B8DC9", width = 0.6) +
+  geom_jitter(height = 0.15, width = 0, size = 1.8, alpha = 0.55, color = "#1F3B5C") +
+  facet_wrap(~ score, scales = "free_x", ncol = 3) +
+  labs(title = "Scores by clinic", x = NULL, y = NULL) +
+  theme_report() +
+  theme(panel.grid.major.y = element_line(color = "grey92"))
+```
+
+## Table and tests
+
+Mean (SD) for every score. Shading runs from lighter (lower) to darker (higher) within each row. Kruskal-Wallis tests whether scores differ across clinics; ε² is the effect size (roughly .01 small, .08 medium, .26 large).
+
+```{r clinic table}
+clinic_levels <- levels(droplevels(df$Clinic[!is.na(df$Clinic)]))
+
+kw <- map_dfr(score_vars, function(v) {
+  d <- df %>% filter(!is.na(Clinic), !is.na(.data[[v]]))
+  t <- kruskal.test(d[[v]] ~ droplevels(d$Clinic))
+  tibble(score = v, H = unname(t$statistic), p = t$p.value,
+         eps2 = unname(t$statistic) / (nrow(d) - 1))
+}) %>%
+  mutate(p_holm = p.adjust(p, method = "holm"))
+
+stats_long <- df %>%
+  filter(!is.na(Clinic)) %>%
+  select(Clinic, all_of(score_vars)) %>%
+  pivot_longer(-Clinic, names_to = "score") %>%
+  group_by(score, Clinic) %>%
+  summarise(m = mean(value, na.rm = TRUE), s = sd(value, na.rm = TRUE), .groups = "drop") %>%
+  group_by(score) %>%
+  mutate(shade = (m - min(m)) / max(max(m) - min(m), 1e-9)) %>%
+  ungroup()
+
+shade_col <- colorRampPalette(c("#F4F8FB", "#9EC5EE"))(101)
+
+cells <- stats_long %>%
+  mutate(cell = cell_spec(paste0(f2(m), " (", f2(s), ")"),
+                          background = shade_col[round(shade * 100) + 1],
+                          color = "#1b1b1b")) %>%
+  select(score, Clinic, cell) %>%
+  pivot_wider(names_from = Clinic, values_from = cell)
+
+fmt_p <- function(p) ifelse(p < 0.001, "< .001", formatC(p, format = "f", digits = 3))
+
+clinic_comparison <- cells %>%
+  left_join(kw, by = "score") %>%
+  mutate(score = factor(score, levels = score_vars)) %>%
+  arrange(score) %>%
+  transmute(Score = score_labels[as.character(score)],
+            !!!syms(clinic_levels),
+            `ε²` = f2(eps2), p = fmt_p(p), `p (Holm)` = fmt_p(p_holm))
+
+clinic_n_lab <- clinic_n %>% mutate(lab = paste0(Clinic, "<br><span class='note-small'>n = ", n, "</span>"))
+names(clinic_comparison)[match(clinic_levels, names(clinic_comparison))] <-
+  clinic_n_lab$lab[match(clinic_levels, clinic_n_lab$Clinic)]
+
+clinic_comparison %>%
+  kable(format = "html", escape = FALSE, align = c("l", rep("c", length(clinic_levels)), "r", "r", "r"),
+        caption = "Mean (SD) by clinic, with Kruskal-Wallis tests") %>%
+  kable_styling(bootstrap_options = c("hover", "condensed"), full_width = TRUE) %>%
+  column_spec(1, bold = TRUE) %>%
+  pack_rows("Implementation Climate (1–5)", 1, 7) %>%
+  pack_rows("Psychological Safety (1–7)", 8, 8) %>%
+  pack_rows("Care Decisions (CSACD)", 9, 11) %>%
+  scroll_box(width = "100%")
+```
+
+## Implementation team
+
+Orthopedics only. With `r sum(df$impteam == 1 & df$Clinic %in% "Orthopedics")` team members, this comparison is descriptive and not tested.
+
+```{r impteam table}
+impteam_long <- df %>%
+  filter(Clinic == "Orthopedics", !is.na(impteam)) %>%
+  mutate(impteam = factor(impteam, levels = c(0, 1),
+                          labels = c("Not on team", "Implementation team"))) %>%
+  select(impteam, all_of(score_vars)) %>%
+  pivot_longer(-impteam, names_to = "score") %>%
+  group_by(score, impteam) %>%
+  summarise(cell = paste0(f2(mean(value, na.rm = TRUE)), " (", f2(sd(value, na.rm = TRUE)), ")"),
+            .groups = "drop") %>%
+  pivot_wider(names_from = impteam, values_from = cell) %>%
+  mutate(score = factor(score, levels = score_vars)) %>%
+  arrange(score) %>%
+  mutate(Score = score_labels[as.character(score)]) %>%
+  select(Score, everything(), -score)
+
+team_n <- df %>% filter(Clinic == "Orthopedics") %>% count(impteam)
+names(impteam_long)[-1] <- paste0(names(impteam_long)[-1], " (n = ",
+                                  team_n$n[match(c(0, 1), team_n$impteam)], ")")
+
+pretty_table(impteam_long, caption = "Mean (SD) by implementation team status, Orthopedics")
+```
+
+# Reliability (Cronbach's Alpha)
+
+```{r reliability}
+alpha_row <- function(data, items, label) {
+  a <- suppressWarnings(psych::alpha(data[, items], check.keys = TRUE))
+  tibble(
+    Scale = label,
+    `# Items` = length(items),
+    `Raw Alpha` = round(a$total$raw_alpha, 2),
+    `Std. Alpha` = round(a$total$std.alpha, 2),
+    `Mean` = round(a$total$mean, 2),
+    `SD` = round(a$total$sd, 2)
+  )
+}
+
+reliability_table <- bind_rows(
+  alpha_row(df, ic_items, "IC — All 12 items"),
+  alpha_row(df, c("IC_1","IC_2","IC_7","IC_8"), "IC — Focus subscale"),
+  alpha_row(df, c("IC_3","IC_4","IC_9","IC_10"), "IC — Support subscale"),
+  alpha_row(df, c("IC_5","IC_6","IC_11","IC_12"), "IC — Recognition subscale"),
+  alpha_row(df, c("EPSC_1_r","EPSC_2","EPSC_3_r","EPSC_4","EPSC_5_r","EPSC_6","EPSC_7"), "EPSC — All 7 items (reverse-coded)"),
+  alpha_row(df, csacd1_items, "CSACD.I — Collaboration")
+)
+
+pretty_table(reliability_table, caption = "Scale Reliability Summary") %>%
+  column_spec(3, color = ifelse(reliability_table$`Raw Alpha` >= 0.7, "#1b1b1b", "#C8553D"),
+              bold = reliability_table$`Raw Alpha` < 0.7) %>%
+  kableExtra::footnote(general = "Values below .70 are shown in red.", general_title = "")
+```
+
+# Descriptive Statistics
+
+```{r descriptives}
+desc_table <- df %>%
+  select(all_of(score_vars)) %>%
+  psych::describe() %>%
+  as.data.frame() %>%
+  rownames_to_column("Variable") %>%
+  mutate(Variable = score_labels[Variable]) %>%
+  select(Variable, n, mean, sd, min, max, skew, kurtosis) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 2)))
+
+pretty_table(desc_table, caption = "Descriptive Statistics — Composite Scores")
+```
+
+# Methods {#methods}
+
+The code below runs at the start of the report (before the results above); it is shown here for reference.
+
+## Initial Cleaning & Renaming
+
+```{r cleaning, eval=FALSE}
+# Remove exported qualtrics labels first two rows
+df <- df %>%
+  slice(-(1:2))
+
+# Filter if unfinished
+df <- df %>%
+  filter(Finished == 1)
+
+# Rename other vars
+df <- df %>%
+  rename(ID = `Last.4.Dig.Phone..`,
+         position = `Job.Title`)
+
+# Drop Qualtrics preview/test responses if present
+if ("DistributionChannel" %in% names(df)) {
+  df <- df %>% filter(DistributionChannel != "preview")
+}
+
+df <- df %>%
+  mutate(
+    Gender = as.factor(Gender),
+    Race = as.factor(Race),
+    Ethnicity = as.factor(Ethnicity),
+    position = as.factor(position),
+    Clinic = as.factor(Clinic),
+    Experience = suppressWarnings(as.numeric(Experience))
+  )
+
+df <- df %>%
+  mutate(
+    Clinic_raw = as.character(Clinic),
+    Clinic = case_when(
+      is.na(Clinic_raw)              ~ NA_character_,
+      Clinic_raw == "1,2"            ~ "Gastroenterology",   # Adolescent + Endocrinology -> Gastro
+      Clinic_raw == "2,5"            ~ "Endocrinology",      # Endocrinology + Other -> Endocrinology
+      Clinic_raw == "3,5"            ~ "Gastroenterology",   # Gastro + Other ("Infectious diseases")
+      Clinic_raw == "4,5"            ~ "Orthopedics",        # Ortho + Other ("OR, ED, Rehab")
+      Clinic_raw == "1"              ~ "Adolescent Young Adult Medicine",
+      Clinic_raw == "2"              ~ "Endocrinology",
+      Clinic_raw == "3"              ~ "Gastroenterology",
+      Clinic_raw == "4"              ~ "Orthopedics",
+      TRUE                            ~ NA_character_
+    ),
+    Clinic = factor(Clinic, levels = c("Adolescent Young Adult Medicine",
+                                        "Endocrinology",
+                                        "Gastroenterology",
+                                        "Orthopedics"))
+  )
+
+df <- df %>%
+  mutate(
+    Gender = factor(Gender,
+                     levels = c(1, 2, 7),
+                     labels = c("Woman", "Man", "Prefer not to answer")),
+
+    Race = factor(Race,
+                   levels = c(1, 2, 3, 4, 5, 6, 7, 8),
+                   labels = c("White", "Black or African American",
+                              "American Indian or Native Alaskan",
+                              "Asian", "Native Hawaiian or Pacific Islander",
+                              "More than one", "Other", "Prefer not to answer")),
+
+    Ethnicity = factor(Ethnicity,
+                        levels = c(1, 2, 3),
+                        labels = c("Hispanic", "Non-Hispanic", "Prefer not to answer"))
+  )
+
+df <- df %>%
+  mutate(
+    position_temp = position %>%
+      as.character() %>%
+      str_squish() %>%
+      str_to_lower(),
+
+    position_group = case_when(
+      # --- Physician ---
+      str_detect(position_temp, "orthopaedic surgeon|orthopedic surgeon") ~ "Physician",
+      str_detect(position_temp, "gastroenterologist|hepatologist")        ~ "Physician",
+      str_detect(position_temp, "clinical professor")                    ~ "Physician",
+      str_detect(position_temp, "\\bmd\\b|^physician$")                  ~ "Physician",
+
+      # --- Physician Assistant ---
+      str_detect(position_temp, "physician assistant|\\bpa-c\\b|\\bpa\\b") ~ "Physician Assistant",
+
+      # --- RN / Nurse Practitioner ---
+      str_detect(position_temp, "nurse practitioner|\\bcpnp\\b")         ~ "RN / Nurse Practitioner",
+      str_detect(position_temp, "\\brn\\b")                             ~ "RN / Nurse Practitioner",
+
+      # --- Medical Assistant / Patient Access ---
+      str_detect(position_temp, "cma.?par|ma.?par")                     ~ "Medical Assistant / Patient Access",
+      str_detect(position_temp, "medical assistant|\\bcma\\b")          ~ "Medical Assistant / Patient Access",
+      str_detect(position_temp, "patient access rep|\\bpar\\b")         ~ "Medical Assistant / Patient Access",
+
+      # --- Allied Health / Technician ---
+      str_detect(position_temp, "athletic trainer")                    ~ "Allied Health / Technician",
+      str_detect(position_temp, "ortho.*tech")                         ~ "Allied Health / Technician",
+
+      # --- Other Staff ---
+      str_detect(position_temp, "social worker")                       ~ "Other Staff",
+      str_detect(position_temp, "research coordinator")                ~ "Other Staff",
+      str_detect(position_temp, "medical student")                     ~ "Other Staff",
+      str_detect(position_temp, "admin associate|operations manager|supervisor") ~ "Other Staff",
+
+      TRUE ~ "Other Staff"
+    ),
+    position_group = as.factor(position_group)
+  ) %>%
+  select(-position_temp)
+
+# Implementation team membership (1 = member), cross-referenced from team meeting rosters.
+# The member IDs are kept in a local file next to the survey export, NOT in this code,
+# so they never appear on the public page. The file has one column named "ID".
+ids_file <- file.path(data_dir, "ImpTeam_IDs.csv")
+stopifnot("ImpTeam_IDs.csv not found in the data folder" = file.exists(ids_file))
+impteam_ids <- read.csv(ids_file, colClasses = "character")$ID
+
+df <- df %>%
+  mutate(impteam = if_else(ID %in% impteam_ids, 1, 0))
+```
+
+## Scale Scoring
+
+### Implementation Climate (IC)
+
+Scale: 1 (Completely disagree) to 5 (Completely agree). No reverse-coded items.
+
+```{r ic scoring, eval=FALSE}
+ic_items <- paste0("IC_", 1:12)
+stopifnot(all(ic_items %in% names(df)))
+
+df <- df %>%
+  mutate(across(all_of(ic_items), as.numeric)) %>%
+  mutate(
+    IC_Focus_Self         = rowMeans(across(c(IC_1, IC_2)), na.rm = TRUE),
+    IC_Focus_Clinic        = rowMeans(across(c(IC_7, IC_8)), na.rm = TRUE),
+    IC_Support_Self       = rowMeans(across(c(IC_3, IC_4)), na.rm = TRUE),
+    IC_Support_Clinic      = rowMeans(across(c(IC_9, IC_10)), na.rm = TRUE),
+    IC_Recognition_Self   = rowMeans(across(c(IC_5, IC_6)), na.rm = TRUE),
+    IC_Recognition_Clinic  = rowMeans(across(c(IC_11, IC_12)), na.rm = TRUE),
+    IC_Total = rowMeans(across(all_of(ic_items)), na.rm = TRUE)
+  )
+```
+
+### Team Psychological Safety (EPSC, Edmondson)
+
+Scale: 1–7. Items 1, 3, and 5 are reverse-scored.
+
+```{r epsc scoring, eval=FALSE}
+epsc_items <- paste0("EPSC_", 1:7)
+stopifnot(all(epsc_items %in% names(df)))
+
+df <- df %>%
+  mutate(across(all_of(epsc_items), as.numeric)) %>%
+  mutate(
+    EPSC_1_r = 8 - EPSC_1,
+    EPSC_3_r = 8 - EPSC_3,
+    EPSC_5_r = 8 - EPSC_5,
+    EPSC_Total = rowMeans(
+      across(c(EPSC_1_r, EPSC_2, EPSC_3_r, EPSC_4, EPSC_5_r, EPSC_6, EPSC_7)),
+      na.rm = TRUE
+    )
+  )
+```
+
+### Collaboration & Satisfaction About Care Decisions (CSACD)
+
+- **CSACD.I** — Collaboration (6 items, 1–7 scale) → averaged
+- **CSACD.II** — Satisfaction with decision (1 item) → used as-is
+- **CSACD.III** — Decision-making pattern (2 items, 1–7 scale) → averaged
+
+```{r csacd scoring, eval=FALSE}
+csacd1_items <- paste0("CSACD.I_", 1:6)
+stopifnot(all(csacd1_items %in% names(df)))
+
+likert_cols <- c(paste0("IC_", 1:12), paste0("EPSC_", 1:7),
+                  paste0("CSACD.I_", 1:6), "CSACD.II_1", "CSACD.III_1", "CSACD.III_2")
+
+df <- df %>%
+  mutate(across(all_of(likert_cols), as.numeric)) %>%
+  mutate(
+    CSACD_Collaboration = rowMeans(across(all_of(csacd1_items)), na.rm = TRUE),
+    CSACD_Satisfaction   = CSACD.II_1,
+    CSACD_DecisionMaking = rowMeans(across(c(CSACD.III_1, CSACD.III_2)), na.rm = TRUE)
+  )
+```
+
+<!--
+Personal reminder (hidden from the rendered page): to publish an update
+cd ~/Documents/UCSD/project3-aim2-report
+git pull origin main
+git add Descriptivestats.Rmd
+git commit -m "Update analysis"
+git push
+-->

@@ -1,0 +1,29 @@
+name: Render report
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: self-hosted
+    if: github.actor != 'github-actions[bot]'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create docs folder
+        run: mkdir -p docs
+      - name: Knit Rmd
+        run: |
+          Rscript -e 'rmarkdown::render("Descriptivestats.Rmd", output_file = "docs/index.html")'
+      - name: Commit rendered HTML
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add docs/index.html
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-render report"
+            git pull --rebase origin main
+            git push
+          fi

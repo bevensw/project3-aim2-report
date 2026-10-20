@@ -1,0 +1,6 @@
+*.csv
+*.xlsx
+*.pdf
+.DS_Store
+.Rhistory
+Descriptivestats.html
