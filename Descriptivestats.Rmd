@@ -178,23 +178,49 @@ cat(paste0("- ", bullets, collapse = "\n"), "\n")
 # Sample
 
 ```{r demographics}
+# Respondents by clinic, with a small bar showing each clinic's share
 clinic_table <- df %>%
-  tabyl(Clinic) %>%
-  adorn_totals("row") %>%
-  mutate(percent = round(percent * 100, 1))
+  mutate(Clinic = as.character(Clinic),
+         Clinic = ifelse(is.na(Clinic), "Not reported", Clinic)) %>%
+  count(Clinic) %>%
+  mutate(pct = n / sum(n)) %>%
+  arrange(desc(n))
 
-pretty_table(clinic_table, caption = "Respondents by Clinic")
+bar <- function(p) sprintf(
+  "<div style='background:#2780e3;opacity:.8;height:14px;width:%.0fpx;border-radius:3px'></div>",
+  p * 260)
 
+clinic_display <- clinic_table %>%
+  transmute(Clinic, n, `%` = sprintf("%.1f%%", 100 * pct), Share = bar(pct)) %>%
+  bind_rows(tibble(Clinic = "Total", n = sum(clinic_table$n), `%` = "100.0%", Share = ""))
+
+clinic_display %>%
+  kable(format = "html", escape = FALSE, align = c("l", "r", "r", "l"),
+        caption = "Respondents by clinic") %>%
+  kable_styling(bootstrap_options = c("hover", "condensed"),
+                full_width = FALSE, position = "left") %>%
+  column_spec(4, width = "280px") %>%
+  row_spec(nrow(clinic_display), bold = TRUE,
+           extra_css = "border-top: 2px solid #999;")
+```
+
+```{r table1}
 # Readable row names for Table 1
+table1::label(df$Clinic)              <- "Clinic"
 table1::label(df$position_group)      <- "Position"
 table1::label(df$Experience)          <- "Experience (years)"
-table1::label(df$IC_Total)            <- "Implementation Climate (total)"
-table1::label(df$EPSC_Total)          <- "Team Psychological Safety"
-table1::label(df$CSACD_Collaboration) <- "CSACD: Collaboration"
+table1::label(df$IC_Total)            <- "Implementation Climate (1–5)"
+table1::label(df$EPSC_Total)          <- "Team Psychological Safety (1–7)"
+table1::label(df$CSACD_Collaboration) <- "Collaboration on Care Decisions (1–7)"
 
 table1::table1(~ Gender + Race + Ethnicity + position_group + Experience +
                  IC_Total + EPSC_Total + CSACD_Collaboration | Clinic,
-               data = df)
+               data = df,
+               overall = "All clinics",
+               topclass = "Rtable1-zebra Rtable1-shade",
+               render.continuous = c(. = "Mean (SD)", . = "Median [Min, Max]"),
+               caption = "Participant characteristics by clinic",
+               footnote = "Scores are means of each scale's items. Missing = no response to that question.")
 ```
 
 # Self vs. Clinic {#self-vs-clinic}
@@ -387,6 +413,51 @@ clinic_comparison %>%
   pack_rows("Care Decisions (CSACD)", 9, 11) %>%
   scroll_box(width = "100%")
 ```
+
+
+**What the tests show**
+
+```{r clinic interpretation, echo=FALSE, results="asis"}
+eff_word <- function(e) as.character(cut(e, c(-Inf, .01, .08, .26, Inf), right = FALSE,
+                                         labels = c("negligible", "small", "medium", "large")))
+kw_lab   <- kw %>% mutate(label = score_labels[score])
+sig_raw  <- kw_lab %>% filter(p < .05)
+sig_holm <- kw_lab %>% filter(p_holm < .05)
+top      <- kw_lab %>% slice_max(eps2, n = 1, with_ties = FALSE)
+top_m    <- stats_long %>% filter(score == top$score)
+hi       <- top_m %>% slice_max(m, n = 1, with_ties = FALSE)
+lo       <- top_m %>% slice_min(m, n = 1, with_ties = FALSE)
+n_med    <- sum(kw_lab$eps2 >= .08)
+n_tests  <- nrow(kw_lab)
+
+overall <- if (nrow(sig_holm) > 0) {
+  paste0("**After correcting for ", n_tests, " comparisons, clinics differed on ",
+         paste(sig_holm$label, collapse = ", "), ".**")
+} else if (nrow(sig_raw) > 0) {
+  paste0("**No score differed across clinics after correcting for ", n_tests,
+         " comparisons.** Before correction, ", paste(sig_raw$label, collapse = ", "),
+         " reached p < .05; treat these as leads to watch, not findings.")
+} else {
+  paste0("**No score differed significantly across clinics** (all ", n_tests,
+         " tests p ≥ .05, before and after correction).")
+}
+
+bullets <- c(
+  overall,
+  paste0("**The largest gap was in ", top$label, "** (ε² = ", f2(top$eps2), ", a ",
+         eff_word(top$eps2), " effect): ", hi$Clinic, " averaged ", f2(hi$m), " vs. ",
+         f2(lo$m), " for ", lo$Clinic, "."),
+  paste0(n_med, " of ", n_tests, " scores showed a medium or larger effect (ε² ≥ .08)",
+         if (n_med > 0) " even where the test was not significant." else "."),
+  paste0("**Why significance is hard to reach here:** with ", smallest$n, " respondents in ",
+         smallest$Clinic, " and ", largest$n, " in ", largest$Clinic,
+         ", the tests can only detect large differences. ε² describes how big a difference is ",
+         "regardless of sample size, so it is the better guide for deciding what to follow up.")
+)
+cat(paste0("- ", bullets, collapse = "\n"), "\n")
+```
+
+<span class="note-small">Kruskal-Wallis compares clinics using ranks rather than means, so it holds up with small, uneven groups and skewed scores. Holm correction adjusts p-values because running 11 tests at once raises the chance of a false positive.</span>
 
 ## Implementation team
 
